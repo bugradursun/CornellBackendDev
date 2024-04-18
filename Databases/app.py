@@ -70,6 +70,29 @@ def delete_task(task_id):
     DB.delete_task_by_id(task_id)
     return success_response(task)
 
+@app.route("/tasks/<int:task_id>/subtasks/" , methods = ["POST"]) #with <int:task_id> we can receive it as  function's argument! 
+def create_subtask(task_id):
+    body = json.loads(request.data)
+    description = body.get("description")
+    task = DB.get_task_by_id(task_id)
+    if task is None : 
+        return failure_response("Task not found!")
+    subtask_id = DB.insert_subtask(description,False,task_id)
+    subtask = DB.get_subtask_by_id(subtask_id)
+    if subtask is None :  
+        return failure_response("Subtask could not be created!")
+    return success_response(subtask) 
+
+@app.route("/tasks/<int:task_id>/subtasks/")
+def get_subtasks_of_task(task_id):
+    task = DB.get_task_by_id(task_id)
+    if task is None:
+        return failure_response("Task can not be found")
+    else :
+        return success_response(DB.get_subtasks_of_task(task_id))
+@app.route("/subtasks/")
+def get_subtasks():
+    return success_response(DB.get_all_subtasks())
 
 if __name__ == "__main__":
     app.run(debug=True)  # Runs the Flask development server

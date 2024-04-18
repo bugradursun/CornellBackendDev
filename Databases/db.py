@@ -35,9 +35,10 @@ class DatabaseDriver(object):
     #Database driver for the task app
     #Handles reading and writing data with the database.
 
-    def __init__(self) :
+    def __init__(self) : ##constructor
         self.conn = sqlite3.connect('todo.db',check_same_thread=False) #since we will use singlethread, second argument can be false.No multithread, no possible conflicts
         self.create_task_table()
+        self.create_subtask_table()
     
     def create_task_table(self):
         try:
@@ -113,5 +114,48 @@ class DatabaseDriver(object):
             """,
             (id,)
         )
+
+#--SUBBTASKS---------------------------------
+    
+    def create_subtask_table(self):
+        try:
+            self.conn.execute(
+                """
+                CREATE TABLE subtask(
+                id INTEGER PRIMARY KEY,
+                description TEXT NOT NULL,
+                done BOOLEAN NOT NULL,
+                task_id INTEGER NOT NULL,
+                FOREIGN KEY task_id REFERENCES task(id)
+                );
+                """
+            )
+        except Exception as e:
+            print(e)
+
+    def get_all_subtasks(self) : 
+        cursor = self.conn.execute("SELECT * FROM subtask;")
+        subtasks = parse_cursor(cursor,["id","description","done","task_id"])
+        return subtasks
+    
+    def insert_subtask(self,description,done,id):
+        cursor = self.conn.cursor()
+        cursor.execute("INSERT INTO subtask (description,done,task_id) VALUES (?,?,?);" , (description,done,id)) ##error ?
+        self.conn.commit()
+        return cursor.lastrowid
+    
+    def get_subtask_by_id(self,id):
+        cursor = self.conn.execute("SELECT * FROM subtask WHERE id = ?;",(id,))
+        for row in cursor : 
+            return parse_row(row,["id","description","done","task_id"])
+        return None
+    
+    def get_subtasks_of_task(self,id):
+        cursor = self.conn.execute("SELECT * FROM subtask WHERE task_id = ? ;"(id,))
+        subtasks = parse_cursor(cursor,["id","description","done","task_id"])
+        return subtasks
+        
+ 
+
 
 DatabaseDriver = singleton(DatabaseDriver) 
