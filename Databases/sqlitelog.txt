@@ -1,0 +1,118 @@
+sqlite> CREATE TABLE users (
+   ...> id INTEGER PRIMARY KEY,
+   ...> name TEXT NOT NULL
+   ...> );
+sqlite> .tables
+users
+sqlite> CREATE TABLE profile (
+   ...> id INTEGER PRIMARY KEY,
+   ...> status TEXT NOT NULL,
+   ...> user_id INTEGER NOT NULL,
+   ...> FOREIGN KEY (user_id) REFERENCES user(id)
+   ...> );
+sqlite> .tables
+profile  users  
+sqlite> DROP TABLE profile;
+sqlite> CREATE TABLE profile (
+  id INTEGER PRIMARY KEY,
+  status TEXT NOT NULL,
+  user_id INTEGER UNIQUE,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+sqlite> .tables
+profile  users  
+sqlite> INSERT INTO users (name) VALUES ("Jack");
+sqlite> SELECT * FROM users;
+1|Jack
+sqlite> SELECT * FROM profile;
+sqlite> INSERT INTO profile (status, user_id) VALUES ("online", 1);
+sqlite> SELECT * FROM profile;                                     
+1|online|1
+sqlite> INSERT INTO users (name) VALUES ("Raahi");
+sqlite> INSERT INTO profile (status, user_id) VALUES ("away", 2);      
+sqlite> SELECT * FROM users;                                       
+1|Jack
+2|Raahi
+sqlite> SELECT * FROM profile;                                   
+1|online|1
+2|away|2
+sqlite> INSERT INTO profile (status, user_id) VALUES ("online", 2);    
+Error: UNIQUE constraint failed: profile.user_id
+sqlite> INSERT INTO profile (status, user_id) VALUES ("online", 3);
+sqlite> SELECT * FROM profile;                                     
+1|online|1
+2|away|2
+3|online|3
+sqlite> CREATE TABLE album (
+   ...> id INTEGER PRIMARY KEY,
+   ...> name TEXT NOT NULL
+   ...> );
+sqlite> .tables
+album    profile  users  
+sqlite> CREATE TABLE song (
+   ...> id INTEGER PRIMARY KEY,
+   ...> name TEXT NOT NULL,
+   ...> album_id INTEGER NOT NULL,
+   ...> FOREIGN KEY (album_id) REFERENCES album(id)
+   ...> )
+   ...> ;
+sqlite> .tables
+album    profile  song     users  
+sqlite> INSERT INTO album (name) VALUES ("Grease 2 (Original Motion Picture Soundtrack)");
+sqlite> INSERT INTO song (name, album_id) VALUES ("Cool Rider", 1);
+sqlite> INSERT INTO song (name, album_id) VALUES ("Prowlin'", 1);          
+sqlite> SELECT COUNT(name) FROM song WHERE album_id = 1;
+2
+sqlite> SELECT * FROM song WHERE album_id = 1;           
+1|Cool Rider|1
+2|Prowlin'|1
+sqlite> CREATE TABLE student (
+    id INTEGER PRIMARY KEY,
+    netid TEXT NOT NULL
+);
+sqlite> CREATE TABLE course (
+    id INTEGER PRIMARY KEY,
+    title TEXT NOT NULL
+);
+sqlite> .tables
+album    course   profile  song     student  users  
+sqlite> CREATE TABLE enrollment (
+    id INTEGER PRIMARY KEY,
+    student_id INTEGER NOT NULL,
+    course_id INTEGER NOT NULL,
+    FOREIGN KEY (student_id) REFERENCES student(id),
+    FOREIGN KEY (course_id) REFERENCES course(id)
+);
+sqlite> .tables
+album       enrollment  song        users     
+course      profile     student   
+sqlite> INSERT INTO student (netid) VALUES ("abc123");
+sqlite> INSERT INTO student (netid) VALUES ("def456");
+sqlite> SELECT * FROM student;
+1|abc123
+2|def456
+sqlite> INSERT INTO course (title) VALUES ("CS1110");
+sqlite> INSERT INTO course (title) VALUES ("CS1998");
+sqlite> select * from course;
+1|CS1110
+2|CS1998
+sqlite> SELECT * FROM student;
+1|abc123
+2|def456
+sqlite> INSERT INTO enrollment (student_id, course_id) VALUES (1, 1);
+sqlite> INSERT INTO enrollment (student_id, course_id) VALUES (1, 2);
+sqlite> INSERT INTO enrollment (student_id, course_id) VALUES (2, 1);
+sqlite> SELECT * FROM enrollment;
+1|1|1
+2|1|2
+3|2|1
+sqlite> SELECT course.title, student.netid
+FROM (
+enrollment INNER JOIN course
+ON enrollment.course_id = course.id
+) INNER JOIN student
+ON enrollment.student_id = student.id;
+CS1110|abc123
+CS1998|abc123
+CS1110|def456
+sqlite> 

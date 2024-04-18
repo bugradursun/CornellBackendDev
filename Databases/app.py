@@ -4,9 +4,10 @@ from flask import request
 import sys
 import db #our db.py
 
-#print(sys.path)
-#create and activate env
-#py -3 -m venv .venv
+
+#1)Activate venv .venv\Scripts\activate
+#2)python app.py
+
 #.venv\Scripts\activate
 
 #starting development error => python -m flask run
