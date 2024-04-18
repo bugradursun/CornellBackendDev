@@ -11,6 +11,25 @@ def singleton(cls):
     
     return getinstance
 
+#example : lets have a row = (1,"Task Description",0) and ["id","description","done"] as column
+#output will be like this : {"id":1,"description":"Task description","done":0}
+def parse_row(row,columns):
+    parsed_row = {}
+    for i in range(len(columns)):
+        parsed_row[columns[i]] = row[i]
+    return parsed_row
+
+#cursor stores the result of a query from a database,
+#lets have cursor = [
+#    (1, "Task 1", 0),
+#    (2, "Task 2", 1),
+#    (3, "Task 3", 0)
+#]
+#output will be like: [{"id":1,"description":"Task 1","done":0} , {"id":2,"description":"Task 2 ","done": 1}, ....]
+def parse_cursor(cursor,columns):
+    return [parse_row(row,columns) for row in cursor]
+
+
 #use conn.commit if changes were made in database, if we just do get or select => no need to self.conn.commit
 class DatabaseDriver(object):
     #Database driver for the task app
@@ -50,16 +69,8 @@ class DatabaseDriver(object):
             SELECT * FROM task;
             """
         )
-        tasks =[]
-        for row in cursor:
-            tasks.append(
-                {
-                    "id":row[0],
-                    "description":row[1],
-                    "done":bool(row[2])
-                }
-            )
-            return tasks
+        tasks = parse_cursor(cursor,["id","description","done"])
+        return tasks
         
     def insert_task_table(self,description,done):
         cur = self.conn.cursor()
@@ -82,11 +93,7 @@ class DatabaseDriver(object):
         )
 
         for row in cur:
-            return {
-                "id":row[0],
-                "description":row[1],
-                "done":bool(row[2])
-            }
+            return parse_row(row,["id","description","done"])
         return None
     
     def update_task_by_id(self,id,description,done):

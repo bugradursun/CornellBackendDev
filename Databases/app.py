@@ -12,6 +12,7 @@ import db #our db.py
 
 #starting development error => python -m flask run
 
+
 DB = db.DatabaseDriver() #single instance of our database driver
 
 app = Flask(__name__)
