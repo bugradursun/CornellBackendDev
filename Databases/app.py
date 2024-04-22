@@ -27,7 +27,7 @@ def failure_response(error,code=400):
 @app.route("/")
 @app.route("/tasks/")
 def get_tasks():
-    return success_response(DB.get_all_tasks)
+    return success_response(DB.get_all_tasks())
 
 @app.route("/tasks/",methods=["POST"])
 def create_task():
@@ -83,7 +83,7 @@ def create_subtask(task_id):
         return failure_response("Subtask could not be created!")
     return success_response(subtask) 
 
-@app.route("/tasks/<int:task_id>/subtasks/")
+@app.route("/tasks/<int:task_id>/subtasks/",methods = ["GET"])
 def get_subtasks_of_task(task_id):
     task = DB.get_task_by_id(task_id)
     if task is None:

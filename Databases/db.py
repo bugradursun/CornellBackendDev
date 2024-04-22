@@ -39,6 +39,7 @@ class DatabaseDriver(object):
         self.conn = sqlite3.connect('todo.db',check_same_thread=False) #since we will use singlethread, second argument can be false.No multithread, no possible conflicts
         self.create_task_table()
         self.create_subtask_table()
+        self.conn.commit()
     
     def create_task_table(self):
         try:
@@ -126,12 +127,14 @@ class DatabaseDriver(object):
                 description TEXT NOT NULL,
                 done BOOLEAN NOT NULL,
                 task_id INTEGER NOT NULL,
-                FOREIGN KEY task_id REFERENCES task(id)
+                FOREIGN KEY (task_id) REFERENCES task(id)
                 );
                 """
             )
+            self.conn.commit()
+            print("subtask table created successfully!")
         except Exception as e:
-            print(e)
+            print(f"Error createing subtask table: {e}")
 
     def get_all_subtasks(self) : 
         cursor = self.conn.execute("SELECT * FROM subtask;")
@@ -151,7 +154,7 @@ class DatabaseDriver(object):
         return None
     
     def get_subtasks_of_task(self,id):
-        cursor = self.conn.execute("SELECT * FROM subtask WHERE task_id = ? ;"(id,))
+        cursor = self.conn.execute("SELECT * FROM subtask WHERE task_id = ?;",(id,))
         subtasks = parse_cursor(cursor,["id","description","done","task_id"])
         return subtasks
         
