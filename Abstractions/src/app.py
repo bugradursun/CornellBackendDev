@@ -1,7 +1,10 @@
 import json
 
 from db import db
+from db import Category,Subtask,Task
 from flask import Flask
+from flask import request
+
 
 # define db filename
 db_filename = "todo.db"
@@ -28,71 +31,77 @@ def failure_response(message, code=404):
 
 
 # -- TASK ROUTES ------------------------------------------------------
-
+#https://flask-sqlalchemy.palletsprojects.com/en/2.x/queries/
+#Object.query.all() : queries all entries in an object
 
 @app.route("/")
 @app.route("/tasks/")
 def get_tasks():
-    """
-    Endpoint for getting all tasks
-    """
-    pass
+    return success_response([t.serialize() for t in Task.query.all()])
 
+@app.route("/subtasks/")
+def get_subtasks():
+    return success_response([s.serialize() for s in Subtask.query.all()])
 
-@app.route("/tasks/", methods=["POST"])
+@app.route("/categories")
+def get_categories():
+    return success_response([t.serialize for t in Category.query.all()])
+
+@app.route("/tasks",methods=["POST"])
 def create_task():
-    """
-    Endpoint for creating a new task
-    """
-    pass
-
+    body = json.load(request.data)
+    new_task = Task(description = body.get('description',''),done = body.get('done',False))
+    db.session.add(new_task)
+    db.session.commit()
+    return success_response(new_task.serialize(),201)
 
 @app.route("/tasks/<int:task_id>/")
 def get_task(task_id):
-    """
-    Endpoint for getting a task by id
-    """
-    pass
+    task = Task.query.filter_by(id=task_id).first()
+    if task is None:
+        return failure_response('Task not found!')
+    return success_response(task.serialize)
 
-
-@app.route("/tasks/<int:task_id>/", methods=["POST"])
+@app.route("/tasks/<int:task_id>/",methods = ["POST"])
 def update_task(task_id):
-    """
-    Endpoint for updating a task by id
-    """
-    pass
+    task = Task.query.filter_by(id=task_id).first()
+    if task is None : 
+        return failure_response("Task not found!")
+    body = json.loads(request.data)
+    task.description = body.get('description',task.description)
+    task.done = body.get('done',task.done)
+    db.session.commit()
+    return success_response(task.serialize())
 
-
-@app.route("/tasks/<int:task_id>/", methods=["DELETE"])
+@app.route("tasks/<int:task_id>/",methods=["DELETE"])
 def delete_task(task_id):
-    """
-    Endpoint for deleting a task by id
-    """
-    pass
+    task = Task.query.filter_by(id=task_id).first()
+    if task is None:
+        return failure_response("Task not found to delete!")
+    db.session.delete(task)
+    db.session.commit()
+    return success_response(task.serialize()) 
 
-
-# -- SUBTASK ROUTES ---------------------------------------------------
-
-
-@app.route("/tasks/<int:task_id>/subtasks/", methods=["POST"])
+# -- SUBTASK ROUTES ------------------------------------------------------
+@app.route("/tasks/<int:task_id>/subtasks",methods = ["POST"])
 def create_subtask(task_id):
-    """
-    Endpoint for creating a subtask
-    for a task by id
-    """
-    pass
+    #inorder to create a subtask we must have a task
+    task = Task.query.filter_by(task_id).first()
+    if task is None:
+        return failure_response("Task not found to create a subtask")    
+    body = json.loads(request.data)
+    new_subtask = Subtask(
+        description = body.get('description',''),
+        done = body.get('done',False),
+        task_id = task_id
+    )
+    db.session.add(new_subtask)
+    db.session.commit()
+    return success_response(new_subtask.serialize())
 
+# -- CATEGORY ROUTES ------------------------------------------------------
 
-# -- CATEGORY ROUTES --------------------------------------------------
-
-
-@app.route("/tasks/<int:task_id>/category/", methods=["POST"])
-def assign_category(task_id):
-    """
-    Endpoint for assigning a category
-    to a task by id
-    """
-    pass
+    
 
 
 if __name__ == "__main__":

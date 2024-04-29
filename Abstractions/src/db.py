@@ -4,12 +4,19 @@ db = SQLAlchemy()
 
 # implement database model classes
 
+association_table = db.Table(
+    'association',
+    db.Column('task_id',db.Integer,db.ForeignKey('task.id')),
+    db.Column('category_id',db.Integer,db.ForeignKey('category.id'))
+)
+
 class Task(db.Model):
     __tablename__='task'
     id = db.Column(db.Integer,primary_key = True)
     description = db.Column(db.String,nullable=False)
     done = db.Column(db.Boolean,nullable = False)
     subtasks = db.relationship('Subtask',cascade='delete')
+    categories = db.relationship('Category',secondary = association_table,back_populates = 'tasks')
 
     def __init__(self,**kwargs):
         self.description = kwargs.get('desription')
@@ -20,7 +27,8 @@ class Task(db.Model):
             "id":self.id,
             "description":self.description,
             "done":self.done,
-            "subtasks": [s.serialize() for s in subtasks] ##error?
+            "subtasks": [s.serialize() for s in subtasks], ##error?
+            "categories" : [c.serialize() for c in categories]
 
         }
     
@@ -48,6 +56,7 @@ class Category(db.Model):
     id=db.Column(db.Integer,primary_key=True)
     description=db.Column(db.String,nullable=False)
     color = db.Column(db.String,nullable=False)
+    tasks = db.relationship('Task',secondary=association_table,back_populates = 'categories')
 
     def __init__(self,**kwargs):
         self.description = kwargs.get('description')
