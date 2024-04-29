@@ -86,7 +86,7 @@ def delete_task(task_id):
 @app.route("/tasks/<int:task_id>/subtasks",methods = ["POST"])
 def create_subtask(task_id):
     #inorder to create a subtask we must have a task
-    task = Task.query.filter_by(task_id).first()
+    task = Task.query.filter_by(id=task_id).first()
     if task is None:
         return failure_response("Task not found to create a subtask")    
     body = json.loads(request.data)
@@ -101,8 +101,24 @@ def create_subtask(task_id):
 
 # -- CATEGORY ROUTES ------------------------------------------------------
 
-    
-
+@app.route("/tasks/<int:task_id>/category",methods = ["POST"])
+def assign_category(task_id):
+    task = Task.query.filter_by(id=task_id).first()
+    if task is None:
+        return failure_response("Task not found to create a category")    
+    body = json.loads(request.data)
+    description = body.get('description')
+    if description is None:
+        return failure_response("No description provided")
+    category = Category.filter_by(description=description).first()
+    if category is None:
+        category = Category(
+            description = description,
+            color = body.get('color','purple')
+        )
+    task.categories.append(category)
+    db.session.commit()
+    return success_response(task.serialize())
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
