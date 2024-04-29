@@ -19,7 +19,7 @@ class Task(db.Model):
     categories = db.relationship('Category',secondary = association_table,back_populates = 'tasks')
 
     def __init__(self,**kwargs):
-        self.description = kwargs.get('desription')
+        self.description = kwargs.get('description')
         self.done =kwargs.get('done')
 
     def serialize(self):
@@ -27,8 +27,8 @@ class Task(db.Model):
             "id":self.id,
             "description":self.description,
             "done":self.done,
-            "subtasks": [s.serialize() for s in subtasks], ##error?
-            "categories" : [c.serialize() for c in categories]
+            "subtasks": [s.serialize() for s in self.subtasks], ##error?
+            "categories" : [c.serialize() for c in self.categories]
 
         }
     

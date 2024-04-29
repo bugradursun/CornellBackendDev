@@ -47,10 +47,10 @@ def get_subtasks():
 def get_categories():
     return success_response([t.serialize for t in Category.query.all()])
 
-@app.route("/tasks",methods=["POST"])
+@app.route("/tasks/",methods=["POST"])
 def create_task():
-    body = json.load(request.data)
-    new_task = Task(description = body.get('description',''),done = body.get('done',False))
+    body = json.loads(request.data)
+    new_task = Task(description = body.get('description'),done = body.get('done',False))
     db.session.add(new_task)
     db.session.commit()
     return success_response(new_task.serialize(),201)
@@ -60,7 +60,7 @@ def get_task(task_id):
     task = Task.query.filter_by(id=task_id).first()
     if task is None:
         return failure_response('Task not found!')
-    return success_response(task.serialize)
+    return success_response(task.serialize())
 
 @app.route("/tasks/<int:task_id>/",methods = ["POST"])
 def update_task(task_id):
@@ -73,7 +73,7 @@ def update_task(task_id):
     db.session.commit()
     return success_response(task.serialize())
 
-@app.route("tasks/<int:task_id>/",methods=["DELETE"])
+@app.route("/tasks/<int:task_id>/",methods=["DELETE"])
 def delete_task(task_id):
     task = Task.query.filter_by(id=task_id).first()
     if task is None:
@@ -110,7 +110,7 @@ def assign_category(task_id):
     description = body.get('description')
     if description is None:
         return failure_response("No description provided")
-    category = Category.filter_by(description=description).first()
+    category = Category.query.filter_by(description = description).first()
     if category is None:
         category = Category(
             description = description,
@@ -119,6 +119,7 @@ def assign_category(task_id):
     task.categories.append(category)
     db.session.commit()
     return success_response(task.serialize())
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
