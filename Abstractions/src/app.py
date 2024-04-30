@@ -1,4 +1,5 @@
-import json
+import json 
+import os #to able to used by other users who connects via heroku
 
 from db import db
 from db import Category,Subtask,Task
@@ -122,4 +123,5 @@ def assign_category(task_id):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    port = os.environ.get("PORT",8000)
+    app.run(host="0.0.0.0", port=port)
