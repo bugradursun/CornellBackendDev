@@ -84,7 +84,7 @@ class Asset(db.Model):
             s3_client.upload_file(img_temploc,S3_BUCKET,img_filename)
 
             s3_resource = boto3.resource("s3") #resource for s3
-            object_acl = s3_resource.ObjectACL(S3_BUCKET,img_filename)
+            object_acl = s3_resource.ObjectAcl(S3_BUCKET,img_filename)
             object_acl.put(ACL ="public-read") #now anybody can read our image url
 
             #remove img from temp loc

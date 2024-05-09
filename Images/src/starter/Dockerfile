@@ -1,7 +1,7 @@
-FROM python:3.9.12
+FROM python:3.12.0
 
 RUN mkdir usr/app   
-WORKDIR usr/app 
+WORKDIR /usr/app 
 
 COPY . .
 
