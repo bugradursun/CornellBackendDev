@@ -2,6 +2,7 @@ version: "3"
 
 services:
   demo:
-    image:
+    image: bugra/demo8
+    env_file: .env
     ports:
       - "8000:8000"
